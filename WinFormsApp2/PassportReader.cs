@@ -8,18 +8,18 @@ using System.Drawing;
 
 namespace WinFormsApp2
 {
-    class PassportReader
+    static internal class PassportReader
     {
-        static string path = "..\\..\\..\\..\\trainedData";
+        static readonly private string path = "..\\..\\..\\..\\trainedData";
 
         public static Image<Bgr, byte> SkewCorrection(Image<Bgr, byte> image)
         {
             var SE = Mat.Ones(15, 15, DepthType.Cv8U, 1);
             var binary = image.Convert<Gray, byte>()
-            .SmoothGaussian(3)
-            .ThresholdBinaryInv(new Gray(150), new Gray(255))
-            .MorphologyEx(MorphOp.Dilate, SE, new Point(-1, -1), 1, BorderType.Default, new MCvScalar(0))
-            .Erode(1);
+                .SmoothGaussian(3)
+                .ThresholdBinaryInv(new Gray(150), new Gray(255))
+                .MorphologyEx(MorphOp.Dilate, SE, new Point(-1, -1), 1, BorderType.Default, new MCvScalar(0))
+                .Erode(1);
             var points = new VectorOfPoint();
             CvInvoke.FindNonZero(binary, points);
             var minAreaRect = CvInvoke.MinAreaRect(points);
@@ -39,7 +39,7 @@ namespace WinFormsApp2
             CvInvoke.Canny(croppedImage, croppedImage, 10, 100);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(7, 7), new Point(-1, -1));
             CvInvoke.MorphologyEx(croppedImage, croppedImage, MorphOp.Close, kernel, new Point(-1, -1), 1, BorderType.Constant, new MCvScalar(1));
-            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+            VectorOfVectorOfPoint contours = new();
             CvInvoke.FindContours(croppedImage, contours, new Mat(), RetrType.External, ChainApproxMethod.ChainApproxSimple);
             var rect = CvInvoke.BoundingRectangle(contours[0]);
 
@@ -78,7 +78,7 @@ namespace WinFormsApp2
             CvInvoke.Canny(segmentedImage, segmentedImage, 330, 390);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(12, 4), new Point(-1, -1));
             CvInvoke.MorphologyEx(segmentedImage, segmentedImage, MorphOp.Close, kernel, new Point(-1, -1), 1, BorderType.Constant, new MCvScalar(1));
-            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+            VectorOfVectorOfPoint contours = new();
             var hierachy = CvInvoke.FindContourTree(segmentedImage, contours, ChainApproxMethod.ChainApproxSimple);
             var index = 0;
 
@@ -94,7 +94,7 @@ namespace WinFormsApp2
                     Image<Bgr, byte> newImage = CutRectangle(image, rect);
                     tesseract.SetImage(newImage);
                     tesseract.Recognize();
-                    if (tesseract.GetUTF8Text() != "")
+                    if (!string.IsNullOrWhiteSpace(tesseract.GetUTF8Text()))
                     {
                         listOfImages.Add(newImage);
                     }

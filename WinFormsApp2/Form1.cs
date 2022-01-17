@@ -8,46 +8,55 @@ namespace WinFormsApp2
 {
     public partial class Form1 : Form
     {
-        Image<Bgr, byte> inputImage;
-        Image<Bgr, byte> bottomImage;
-        List<Image<Bgr, byte>> listOfImage;
-        List<string> listOfStrings;
+        private Image<Bgr, byte> inputImage;
+        private Image<Bgr, byte> bottomImage;
+        private List<Image<Bgr, byte>> listOfImage;
+        private List<string> listOfStrings;
+
+        private const string INFORMATION = "Information";
+        private const string WARNING = "Warning";
+        private const string ERROR = "Error";
+        private const string MESSAGE1 = "Скан паспорта загружен.";
+        private const string MESSAGE2 = "Скан паспорта не выбран.";
+        private const string MESSAGE3 = "Загрузите скан паспорта.";
+        private const string MESSAGE4 = "Данные успешно распознаны.";
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
                 openFileDialog1.ShowDialog();
                 inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
                 pictureBox1.Image = inputImage.ToBitmap();
-                MessageBox.Show("Скан паспорта загружен.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MESSAGE1, INFORMATION, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception)
             {
-                MessageBox.Show("Скан паспорта не выбран.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(MESSAGE2, WARNING, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        private void recognizeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RecognizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (inputImage != null)
+            if (inputImage == null)
             {
-                inputImage = PassportReader.SkewCorrection(inputImage);
-                inputImage = PassportReader.RemoveBackground(inputImage);
-                pictureBox1.Image = inputImage.ToBitmap();
-                bottomImage = PassportReader.DivideImageInHalf(inputImage)[1];
-                listOfImage = PassportReader.Segmentation(bottomImage);
-                listOfStrings = PassportReader.RecognizeImage(listOfImage);
-                FillTextBoxs();
-                MessageBox.Show("Данные успешно распознаны.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(MESSAGE3, ERROR, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else
-                MessageBox.Show("Загрузите скан паспорта.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            inputImage = PassportReader.SkewCorrection(inputImage);
+            inputImage = PassportReader.RemoveBackground(inputImage);
+            pictureBox1.Image = inputImage.ToBitmap();
+            bottomImage = PassportReader.DivideImageInHalf(inputImage)[1];
+            listOfImage = PassportReader.Segmentation(bottomImage);
+            listOfStrings = PassportReader.RecognizeImage(listOfImage);
+            FillTextBoxs();
+            MessageBox.Show(MESSAGE4, INFORMATION, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void FillTextBoxs()
@@ -69,9 +78,9 @@ namespace WinFormsApp2
             textBoxMRZ2.Text = listOfStrings[listOfStrings.Count - 23];
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }
